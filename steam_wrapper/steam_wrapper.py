@@ -167,7 +167,7 @@ def migrate_data():
     games and is massive. It needs to be separately moved
     """
     source = os.path.expandvars("$XDG_DATA_HOME")
-    target = ".data"
+    target = ".local/share"
     steam_home = os.path.join(source, "Steam")
     xdg_data_home = os.path.join(STEAM_ROOT, target)
 
@@ -181,9 +181,9 @@ def migrate_data():
         os.symlink(target, source)
     os.environ["XDG_DATA_HOME"] = xdg_data_home
 
-def migrate_shared():
+def migrate_cache():
     source = os.path.expandvars("$XDG_CACHE_HOME")
-    target = ".local/share"
+    target = ".cache"
     xdg_cache_home = os.path.join(STEAM_ROOT, target)
     if not os.path.islink(source):
         copytree(source, target)
@@ -196,7 +196,7 @@ def main():
     consent = migrate_config()
     if consent:
         migrate_data()
-        migrate_shared()
+        migrate_cache()
     mesa_shader_workaround()
     timezone_workaround()
     os.execve(STEAM_PATH, [STEAM_PATH] + sys.argv[1:], os.environ)
