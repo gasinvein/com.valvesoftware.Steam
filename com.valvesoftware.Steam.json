@@ -75,6 +75,7 @@
             "name": "systemd",
             "buildsystem": "meson",
             "config-opts": [
+                "--sysconfdir=/app/etc",
                 "-Drootprefix=/app",
 
                 "-Denvironment-d=false",
@@ -117,6 +118,7 @@
             ],
             "cleanup": [
                 "/bin",
+                "/etc",
                 "/lib/systemd",
                 "/lib/sysctl.d",
                 "/lib/udev/rules.d",
