@@ -10,7 +10,6 @@ import glob
 import configparser
 
 
-STEAM_PATH = "/app/bin/steam"
 STEAM_ROOT = os.path.expandvars("$HOME/.var/app/com.valvesoftware.Steam")
 XDG_DATA_HOME = os.environ["XDG_DATA_HOME"]
 XDG_CACHE_HOME = os.environ["XDG_CACHE_HOME"]
@@ -130,7 +129,7 @@ def check_nonempty(name):
             raise
         else:
             return False
-        
+
 def legacy_support():
     if not check_nonempty("/etc/ld.so.conf"):
         # Fallback for flatpak < 0.9.99
@@ -221,7 +220,7 @@ def repair_broken_migration():
         os.symlink(data, XDG_DATA_HOME)
         shutil.rmtree(wrong_data)
 
-def main():
+if __name__ == "__main__":
     os.chdir(os.environ["HOME"]) # Ensure sane cwd
     legacy_support()
     consent = migrate_config()
@@ -231,4 +230,5 @@ def main():
     repair_broken_migration()
     mesa_shader_workaround()
     timezone_workaround()
-    os.execve(STEAM_PATH, [STEAM_PATH] + sys.argv[1:], os.environ)
+    executable = sys.argv[1]
+    os.execve(executable, [executable] + sys.argv[2:], os.environ)

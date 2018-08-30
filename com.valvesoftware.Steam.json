@@ -154,14 +154,14 @@
             }]
         },
         {
-            "name": "steam_wrapper",
+            "name": "steam_helper",
             "buildsystem": "simple",
             "sources": [{
-                "type": "dir",
-                "path": "steam_wrapper"
+                "type": "file",
+                "path": "steam_helper.py"
             }],
             "build-commands": [
-                "python3 -mpip install . --prefix=/app --no-index --find-links ."
+                "install -Dm755 steam_helper.py /app/bin/steam-helper"
             ]
         },
         {
@@ -189,6 +189,10 @@
                 {
                     "type": "file",
                     "path": "ld.so.conf"
+                },
+                {
+                    "type": "file",
+                    "path": "steam_wrapper.sh"
                 }
             ],
             "post-install": [
@@ -199,6 +203,7 @@
                 "mkdir -p /app/lib/debug/lib/i386-linux-gnu",
                 "mkdir -p /app/share/appdata",
                 "cp com.valvesoftware.Steam.appdata.xml /app/share/appdata",
+                "install -Dm755 steam_wrapper.sh /app/bin/steam-wrapper",
                 "install -Dm644 ld.so.conf /app/etc/ld.so.conf"
             ]
         },
