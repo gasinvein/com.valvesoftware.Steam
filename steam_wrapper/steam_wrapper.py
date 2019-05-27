@@ -134,15 +134,11 @@ def check_bad_filesystem_entries(entries):
 
 def check_allowed_to_run(current_info):
     current_version = current_info["flatpak-version"]
-    required = "0.9.0"
+    required = "0.10.3"
     if LooseVersion(current_version) < LooseVersion(required):
         raise SystemExit(f"Flatpak {required} or newer required")
 
     check_bad_filesystem_entries(current_info["filesystems"])
-
-    if not check_nonempty("/etc/ld.so.conf"):
-        # Fallback for flatpak < 0.9.99
-        os.environ["LD_LIBRARY_PATH"] = "/app/lib:/app/lib/i386-linux-gnu"
 
     steam_home = os.path.expandvars("$HOME/.var/app/com.valvesoftware.Steam/home")
     if os.path.isdir(steam_home):
@@ -242,7 +238,7 @@ def configure_shared_library_guard():
         return
     else:
         library = "libshared-library-guard.so"
-        os.environ["LD_AUDIT"] = os.pathsep.join((f"/usr/lib/x86-64-linux-gnu/{library}",
+        os.environ["LD_AUDIT"] = os.pathsep.join((f"/usr/lib/x86_64-linux-gnu/{library}",
                                                   f"/app/lib/i386-linux-gnu/{library}"))
         if mode > 1:
             os.environ["LD_BIND_NOW"] = "1"

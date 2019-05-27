@@ -28,6 +28,7 @@ finish-args:
   - --device=all
   - --allow=multiarch
   - --allow=devel
+  - --allow=bluetooth
   - --persist=.
   - --env=TZ=
   - --env=LC_NUMERIC=C
@@ -39,7 +40,7 @@ finish-args:
   - --env=SDL_VIDEODRIVER=
   - --env=DBUS_FATAL_WARNINGS=0
   - --env=SSL_CERT_DIR=/etc/ssl/certs
-  - --require-version=0.9.0
+  - --require-version=0.10.3
 
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
@@ -106,108 +107,9 @@ modules:
         url: https://gitlab.freedesktop.org/libbsd/libbsd.git
         commit: 0.9.1-0-g1ca09c18f76a0ed2ef6349463c25d509a55e20ff
 
-  - name: hwdata
-    config-opts:
-      - --datarootdir=/app/share
-    sources:
-      - type: archive
-        url: https://github.com/vcrhonek/hwdata/archive/v0.322.tar.gz
-        sha256: e71b66971a50f9aca5e7f1f2800e37d9015c69f03e68fd69fd1b687d1d1ba508
+  - "modules/controllers.yml"
 
-  - name: systemd
-    buildsystem: meson
-    config-opts:
-      - --buildtype=plain
-      - -Drootprefix=/app
-      - -Dsysconfdir=/app/etc
-      - -Denvironment-d=false
-      - -Dbinfmt=false
-      - -Dcoredump=false
-      - -Dlogind=false
-      - -Dhostnamed=false
-      - -Dlocaled=false
-      - -Dmachined=false
-      - -Dportabled=false
-      - -Dnetworkd=false
-      - -Dtimedated=false
-      - -Dtimesyncd=false
-      - -Dremote=false
-      - -Dfirstboot=false
-      - -Drandomseed=false
-      - -Dbacklight=false
-      - -Dvconsole=false
-      - -Dquotacheck=false
-      - -Dsysusers=false
-      - -Dtmpfiles=false
-      - -Dimportd=false
-      - -Dhwdb=true
-      - -Drfkill=false
-      - -Dman=false
-      - -Dhtml=false
-      - -Dpam=false
-      - -Dmicrohttpd=false
-      - -Dbashcompletiondir=no
-      - -Dzshcompletiondir=no
-    sources:
-      - type: archive
-        url: https://github.com/systemd/systemd/archive/v241.tar.gz
-        sha256: b2561a8e1d10a2c248253f0dda31a85dd6d69f2b54177de55e02cd1d2778316e
-    cleanup:
-      - /bin
-      - /etc
-      - /lib/systemd
-      - /lib/sysctl.d
-      - /lib/udev/rules.d
-      - /lib/modprobe.d
-      - /lib/kernel
-      - /lib/rpm
-      - /share/polkit-1
-      - /share/dbus-1
-      - /share/factory
-
-  - name: systemd-hwdb
-    buildsystem: simple
-    build-commands:
-      - systemd-hwdb update --usr --strict
-
-  - name: libusb
-    sources:
-      - type: archive
-        url: https://github.com//libusb/libusb/releases/download/v1.0.22/libusb-1.0.22.tar.bz2
-        sha256: 75aeb9d59a4fdb800d329a545c2e6799f732362193b465ea198f2aa275518157
-
-  - name: usbutils
-    config-opts:
-      - --datadir=/app/share/hwdata
-    sources:
-      - type: archive
-        url: https://mirrors.edge.kernel.org/pub/linux/utils/usb/usbutils/usbutils-010.tar.xz
-        sha256: 61c7364bb4986fb05e5067e4ac5585b1299b664c57f761caecd2e9e724794a19
-      - type: patch
-        path: patches/0004-lsusb.py-fix-up-Python-3-conversion.patch
-
-  - name: rapidjson
-    buildsystem: cmake-ninja
-    config-opts:
-      - -DRAPIDJSON_BUILD_DOC=OFF
-      - -DRAPIDJSON_BUILD_EXAMPLES=OFF
-      - -DRAPIDJSON_BUILD_TESTS=OFF
-      - -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF
-    sources:
-      - type: archive
-        url: https://github.com/miloyip/rapidjson/archive/v1.1.0.tar.gz
-        sha256: bf7ced29704a1e696fbccf2a2b4ea068e7774fa37f6d7dd4039d0787f8bed98e
-
-  - name: discord-rpc
-    buildsystem: cmake-ninja
-    config-opts:
-      - -DBUILD_SHARED_LIBS=ON
-    post-install:
-      - install -Dm755 examples/send-presence/send-presence -t /app/bin/
-    sources:
-      - type: archive
-        url: https://github.com/discordapp/discord-rpc/archive/v3.4.0.tar.gz
-        sha256: e13427019027acd187352dacba6c65953af66fdf3c35fcf38fc40b454a9d7855
+  - "modules/discord.yml"
 
   - name: steam_wrapper
     buildsystem: simple
@@ -229,12 +131,11 @@ modules:
         PREFIX=/app make install
         ln -sf /bin/true /app/bin/steamdeps
         cp /usr/bin/cmp /app/bin
-        mkdir -p /app/lib/i386-linux-gnu /app/lib/debug/lib/i386-linux-gnu
         install -Dm644 -t /app/share/metainfo com.valvesoftware.Steam.appdata.xml
     sources:
       - type: archive
         url: http://repo.steampowered.com/steam/archive/precise/steam_latest.tar.gz
-        sha256: a5080db949793fc4eb543293a95a24131441a96ccc8f5deebdecd7257cfcd99f
+        sha256: d66413cce9c9ad441f95c4377103b0c71bda4ac4570ecfc7dd2464fe4ef1bd30
       - type: file
         path: com.valvesoftware.Steam.appdata.xml
 
@@ -270,13 +171,16 @@ modules:
       - |
         set -e
         mkdir -p /app/bin
-        mkdir -p /app/lib/x86_64-linux-gnu/
+        mkdir -p /app/lib/i386-linux-gnu /app/lib/debug/lib/i386-linux-gnu
         cp /usr/bin/addr2line /app/bin/
-        cp /usr/lib/x86_64-linux-gnu/libbfd-2.31.1.so /app/lib/x86_64-linux-gnu
+        cp /usr/lib/x86_64-linux-gnu/libbfd-2.31.1.so /app/lib/
         install -Dm644 -t /app/etc ld.so.conf
         install -Dm644 -t /app/etc freedesktop.ld.so.blockedlist
+        install -Dm744 -t /app/bin lsb_release
     sources:
       - type: file
-        path: ld.so.conf
+        path: resources/ld.so.conf
       - type: file
-        path: freedesktop.ld.so.blockedlist
+        path: resources/freedesktop.ld.so.blockedlist
+      - type: file
+        path: resources/lsb_release
